@@ -27,6 +27,12 @@ import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
 import creds from "../../../abi/creds";
+import {
+  ClaimHistoryResponse,
+  SaleReferralServices,
+} from "../../../services/SaleReferralServices";
+import { useParams } from "react-router";
+import ClaimHistory from "../dialog/ClaimHistory";
 
 declare global {
   interface Window {
@@ -38,6 +44,7 @@ const TOKEN_CONTRACT_ADDRESS = creds.AXLE_CONTRACT;
 const PRESALE_CONTRACT_ADDRESS = creds.AXLE_ZEUS_PRESALE;
 const axleTokenABI = creds.tokenAbi;
 const axlePresaleABI = creds.presaleAbi;
+const chain = creds.chain;
 
 const chainIds = [
   {
@@ -87,9 +94,9 @@ const web3Modal = new Web3Modal({
       options: {
         infuraId: process.env.INFURA_ID, // required
         rpc: {
-          56: "https://bsc-dataseed1.binance.org",
+          56: chain.rpcUrls[0],
         },
-        chainId: 56,
+        chainId: chain.chainId,
       },
     },
     coinbasewallet: {
@@ -98,9 +105,9 @@ const web3Modal = new Web3Modal({
         appName: "COINBASE", // Required
         infuraId: process.env.INFURA_ID, // Required
         rpc: {
-          56: "https://bsc-dataseed1.binance.org",
+          56: chain.rpcUrls,
         },
-        chainId: 56,
+        chainId: chain.chainId,
       },
     },
   },
@@ -108,12 +115,14 @@ const web3Modal = new Web3Modal({
 
 const AxleSale = () => {
   const toast = useToast();
+  const params = useParams();
 
   const [bnb, setBnb] = useState<any>("0.01");
   const [axle, setAxle] = useState<any>(750);
   const [balance, setBalance] = useState(0);
   const [axleBalance, setAxleBalance] = useState<any>("0");
-  const [refAddress, setRefAddress] = useState("");
+  const [claimHistory, setClaimHistory] = useState<ClaimHistoryResponse>();
+  const [claimDialog, setClaimDialog] = useState(false);
 
   const [address, setAddress] = useState<string>("");
   const [onChain, setOnChain] = useState("");
@@ -123,6 +132,56 @@ const AxleSale = () => {
   const [hash, setHash] = useState<string>("");
 
   const [presaleContract, setPresaleContract] = useState<any>();
+
+  const [referralCode, setReferralCode] = useState("");
+
+  // const [refAddress, setRefAddress] = useState("");
+  // const updateReferralAddress = (address: string) => setRefAddress(address);
+  // const confirmRefAddress = async () => {
+  //   try {
+  //     const details = await presaleContract.addReferAddress(refAddress);
+  //     console.log(details);
+  //     return toast({
+  //       title: "Successful",
+  //       description: "Referral Successful",
+  //       status: "success",
+  //       duration: 5000,
+  //       isClosable: true,
+  //       position: "top",
+  //     });
+  //   } catch (error: any) {
+  //     try {
+  //       const m = error.data.message;
+  //       return toast({
+  //         title: "Error",
+  //         description: m,
+  //         status: "error",
+  //         duration: 5000,
+  //         isClosable: true,
+  //         position: "top",
+  //       });
+  //     } catch (e) {
+  //       return toast({
+  //         title: "Error",
+  //         description:
+  //           "Invalid address or Referrer address must have previously purchased AXLE tokens! Try again",
+  //         status: "error",
+  //         duration: 5000,
+  //         isClosable: true,
+  //         position: "top",
+  //       });
+  //     }
+  //   }
+  // };
+
+  const getClaimHistory = () => {
+    SaleReferralServices.getClaimHistory(params.refCode || "")
+      .then((res) => {
+        setClaimHistory(res);
+        setClaimDialog(true);
+      })
+      .catch((err) => console.log(err));
+  };
 
   const onBnbChange = (e: any) => {
     let bnb;
@@ -137,7 +196,6 @@ const AxleSale = () => {
         position: "top",
       });
     }
-    console.log(e.target.value);
     if (e.target.value === "0.") bnb = e.target.value;
     setBnb(bnb.toString());
     setAxle((bnb * 75000).toString());
@@ -151,13 +209,11 @@ const AxleSale = () => {
     }
   };
 
-  const updateReferralAddress = (address: string) => setRefAddress(address);
-
   const switchNetwork = async () => {
     try {
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: ethers.utils.hexlify(56) }],
+        params: [{ chainId: ethers.utils.hexlify(chain.chainId) }],
       });
     } catch (err: any) {
       // This error code indicates that the chain has not been added to MetaMask
@@ -166,14 +222,14 @@ const AxleSale = () => {
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainName: "Smart Chain",
-              chainId: 56,
+              chainName: chain.chainName,
+              chainId: chain.chainId,
               nativeCurrency: {
-                name: "Smart Chain",
-                decimals: 18,
-                symbol: "BNB",
+                name: chain.nativeCurrency.name,
+                decimals: chain.nativeCurrency.decimals,
+                symbol: chain.nativeCurrency.symbol,
               },
-              rpcUrls: ["https://bsc-dataseed.binance.org/"],
+              rpcUrls: chain.rpcUrls,
             },
           ],
         });
@@ -188,7 +244,7 @@ const AxleSale = () => {
       const web3Accounts = await provider.listAccounts();
       setAddress(web3Accounts[0]);
       const network = await provider.getNetwork();
-      if (network.chainId !== 56) switchNetwork();
+      if (network.chainId !== chain.chainId) switchNetwork();
       setNetworkName(network.chainId);
       let bnbBal: any = await provider.getBalance(web3Accounts[0]);
       bnbBal = Number(ethers.utils.formatEther(bnbBal));
@@ -209,45 +265,11 @@ const AxleSale = () => {
       bal = ethers.utils.formatEther(bal);
       setAxleBalance(bal);
       localStorage.setItem("isWalletConnected", "true");
+      await SaleReferralServices.setAddress(web3Accounts[0]).then((resp) => {
+        setReferralCode(resp.refCode);
+      });
     } catch (error) {
       console.log(error);
-    }
-  };
-
-  const confirmRefAddress = async () => {
-    try {
-      const details = await presaleContract.addReferAddress(refAddress);
-      console.log(details);
-      return toast({
-        title: "Successful",
-        description: "Referral Successful",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-        position: "top",
-      });
-    } catch (error: any) {
-      try {
-        const m = error.data.message;
-        return toast({
-          title: "Error",
-          description: m,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "top",
-        });
-      } catch (e) {
-        return toast({
-          title: "Error",
-          description:
-            "Invalid address or Referrer address must have previously purchased AXLE tokens! Try again",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "top",
-        });
-      }
     }
   };
 
@@ -273,10 +295,17 @@ const AxleSale = () => {
     try {
       const options = { value: ethers.utils.parseEther(bnb.toString()) };
       const { hash } = await presaleContract.buyToken(options);
+      await SaleReferralServices.updateReferralBuyEntry(
+        address,
+        params.refCode || "",
+        hash,
+        bnb
+      ).then((resp) => {
+        console.log(resp);
+      });
       setHash(hash);
       setSuccess(true);
     } catch (err: any) {
-      console.log(err);
       let message = err;
       try {
         if (err?.code === "NETWORK_ERROR") {
@@ -308,13 +337,49 @@ const AxleSale = () => {
   };
 
   useEffect(() => {
+    const connectWeb3Wallet = async () => {
+      try {
+        const web3Provider = await web3Modal.connect();
+        const provider = new ethers.providers.Web3Provider(web3Provider);
+        const web3Accounts = await provider.listAccounts();
+        setAddress(web3Accounts[0]);
+        const network = await provider.getNetwork();
+        if (network.chainId !== chain.chainId) switchNetwork();
+        setNetworkName(network.chainId);
+        let bnbBal: any = await provider.getBalance(web3Accounts[0]);
+        bnbBal = Number(ethers.utils.formatEther(bnbBal));
+        setBalance(bnbBal);
+        const signer = provider.getSigner();
+        const token = new ethers.Contract(
+          TOKEN_CONTRACT_ADDRESS,
+          axleTokenABI,
+          signer
+        );
+        const presale = new ethers.Contract(
+          PRESALE_CONTRACT_ADDRESS,
+          axlePresaleABI,
+          signer
+        );
+        setPresaleContract(presale);
+        let bal = await token.balanceOf(web3Accounts[0]);
+        bal = ethers.utils.formatEther(bal);
+        setAxleBalance(bal);
+        localStorage.setItem("isWalletConnected", "true");
+        await SaleReferralServices.setAddress(web3Accounts[0]).then((resp) => {
+          setReferralCode(resp.refCode);
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     disconnectWeb3Modal(true);
     if (window.ethereum !== null && address !== "") {
       window.ethereum.on("accountsChanged", function (accounts: string) {
         connectWeb3Wallet();
       });
       window.ethereum.on("networkChanged", function (chainId: number) {
-        if (chainId !== 56) {
+        if (chainId !== chain.chainId) {
           setTimeout(() => {
             switchNetwork();
             connectWeb3Wallet();
@@ -322,8 +387,7 @@ const AxleSale = () => {
         }
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [address]);
 
   return (
     <Box fontFamily={"quicksand"} fontWeight={"bold"}>
@@ -336,6 +400,17 @@ const AxleSale = () => {
         mb={4}
         mt={{ base: "4", md: "0" }}
       >
+        <AxleDialog
+          children={
+            <ClaimHistory
+              claimHistory={claimHistory?.claimHistory || []}
+              error={claimHistory?.error || true}
+            />
+          }
+          close={() => setClaimDialog(false)}
+          isOpen={claimDialog}
+          size="3xl"
+        />
         <Image
           display={{ base: "none", md: "flex" }}
           maxW="100px"
@@ -417,13 +492,32 @@ const AxleSale = () => {
               borderTopRadius="xl"
               boxShadow={`0px 0px 6px ${brandingColors.newHighlightColor}`}
             >
-              <Text
-                fontFamily={`'Russo One', sans-serif`}
-                pb={2}
-                fontSize={"xl"}
+              <Box
+                alignItems={"center"}
+                display={"flex"}
+                justifyContent="space-between"
+                mb={2}
               >
-                Buy AXLE
-              </Text>
+                <Text
+                  fontFamily={`'Russo One', sans-serif`}
+                  pb={2}
+                  fontSize={"xl"}
+                >
+                  Buy AXLE
+                </Text>
+                <Box
+                  py={1}
+                  px={2}
+                  borderRadius="md"
+                  boxShadow={"md"}
+                  bg={brandingColors.fgColor}
+                  cursor="pointer"
+                  onClick={getClaimHistory}
+                >
+                  View Invites
+                </Box>
+              </Box>
+
               <Flex
                 alignItems={"center"}
                 justifyContent={"center"}
@@ -595,7 +689,7 @@ const AxleSale = () => {
                       rowGap="1rem"
                       pt={4}
                     >
-                      {address !== "" ? (
+                      {/* {address !== "" ? (
                         <Box
                           display="flex"
                           flexDirection={"column"}
@@ -622,7 +716,7 @@ const AxleSale = () => {
                             ></NeuButton>
                           ) : null}
                         </Box>
-                      ) : null}
+                      ) : null} */}
 
                       {address === "" ? (
                         <NeuButton
@@ -676,8 +770,8 @@ const AxleSale = () => {
                     </Text>
                   </Box>
                 </Flex>
-                <Divider mx="auto" width="80%" my={2} />
-                <Text
+                {/* <Divider mx="auto" width="80%" my={2} /> */}
+                {/* <Text
                   color={brandingColors.primaryTextColor}
                   fontSize={{ base: "lg" }}
                   fontFamily={`'Russo One', sans-serif`}
@@ -701,6 +795,42 @@ const AxleSale = () => {
                       return toast({
                         title: "Copied",
                         description: address,
+                        status: "success",
+                        duration: 5000,
+                        isClosable: true,
+                        position: "top",
+                      });
+                    }}
+                    color={brandingColors.secondaryTextColor}
+                  />
+                </Text> */}
+                <Divider mx="auto" width="80%" my={2} />
+                <Text
+                  color={brandingColors.primaryTextColor}
+                  fontSize={{ base: "lg" }}
+                  fontFamily={`'Russo One', sans-serif`}
+                  textAlign={"center"}
+                >
+                  Your Referral Link
+                </Text>
+                <Text
+                  color={brandingColors.secondaryTextColor}
+                  fontFamily={`'Russo One', sans-serif`}
+                  fontWeight={"normal"}
+                  fontSize={{ base: "sm" }}
+                  textAlign={"center"}
+                >
+                  {`https://sale.axlegames.io/${referralCode}`}
+                  <CopyIcon
+                    mx={2}
+                    cursor={"pointer"}
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `https://sale.axlegames.io/${referralCode}`
+                      );
+                      return toast({
+                        title: "Copied",
+                        description: `https://sale.axlegames.io/${referralCode}`,
                         status: "success",
                         duration: 5000,
                         isClosable: true,

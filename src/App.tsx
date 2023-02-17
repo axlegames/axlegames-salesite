@@ -2,6 +2,8 @@ import { brandingColors } from "./config/brandingColors";
 import { useEffect, useState, lazy } from "react";
 import { ChakraProvider, theme, Flex, Box, Text } from "@chakra-ui/react";
 
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
 import AOS from "aos";
 import Marquee from "react-fast-marquee";
 
@@ -20,8 +22,9 @@ export const App = () => {
   useEffect(() => {
     AOS.init({});
   }, []);
-  return (
-    <ChakraProvider theme={theme}>
+
+  const Home = () => {
+    return (
       <Box
         bg={brandingColors.bgColor}
         backgroundImage={`https://axlegames.s3.ap-south-1.amazonaws.com/assets/bg/token_countdown_bg.png`}
@@ -97,6 +100,17 @@ export const App = () => {
           </a>
         </Flex>
       </Box>
+    );
+  };
+
+  return (
+    <ChakraProvider theme={theme}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/:refCode" element={<Home />} />
+        </Routes>
+      </Router>
     </ChakraProvider>
   );
 };
