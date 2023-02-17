@@ -1,11 +1,13 @@
 import { brandingColors } from "./config/brandingColors";
-import { useEffect, useState, lazy } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { ChakraProvider, theme, Flex, Box, Text } from "@chakra-ui/react";
 
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import AOS from "aos";
 import Marquee from "react-fast-marquee";
+
+import { Triangle } from "react-loader-spinner";
 
 import "aos/dist/aos.css";
 import { LinkIcon } from "@chakra-ui/icons";
@@ -15,6 +17,33 @@ const Banner = lazy(() => import("./pages/Axle/dialog/Banner"));
 const AxlePresale = lazy(() => import("./pages/Axle/views/AxleSale"));
 const UtilityGrid = lazy(() => import("./pages/Axle/views/UtilityGrid"));
 const WhitePaper = lazy(() => import("./pages/Axle/views/WhitePaper"));
+
+const FallBack = () => {
+  return (
+    <Box
+      width={"100vw"}
+      height={"100vh"}
+      display={"flex"}
+      justifyContent="center"
+      alignItems={"center"}
+      bg={brandingColors.bgColor}
+      position="fixed"
+      zIndex={500}
+      margin={0}
+      padding={0}
+    >
+      <Triangle
+        height={"100"}
+        width={"100"}
+        ariaLabel="grid-loading"
+        color={brandingColors.primaryTextColor}
+        wrapperStyle={{}}
+        wrapperClass=""
+        visible={true}
+      />
+    </Box>
+  );
+};
 
 export const App = () => {
   const [banner, setBanner] = useState(true);
@@ -105,12 +134,14 @@ export const App = () => {
 
   return (
     <ChakraProvider theme={theme}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/:refCode" element={<Home />} />
-        </Routes>
-      </Router>
+      <Suspense fallback={<FallBack></FallBack>}>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/:refCode" element={<Home />} />
+          </Routes>
+        </Router>
+      </Suspense>
     </ChakraProvider>
   );
 };

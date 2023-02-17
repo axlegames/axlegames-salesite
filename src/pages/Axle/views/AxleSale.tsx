@@ -12,7 +12,12 @@ import {
   useToast,
 } from "@chakra-ui/react";
 
-import { ArrowDownIcon, CopyIcon, LinkIcon } from "@chakra-ui/icons";
+import {
+  ArrowDownIcon,
+  ArrowForwardIcon,
+  CopyIcon,
+  LinkIcon,
+} from "@chakra-ui/icons";
 
 import NFT from "./NFT";
 import NeuButton from "../component/NeuButton";
@@ -175,7 +180,7 @@ const AxleSale = () => {
   // };
 
   const getClaimHistory = () => {
-    SaleReferralServices.getClaimHistory(params.refCode || "")
+    SaleReferralServices.getClaimHistory(referralCode || "")
       .then((res) => {
         setClaimHistory(res);
         setClaimDialog(true);
@@ -513,8 +518,13 @@ const AxleSale = () => {
                   bg={brandingColors.fgColor}
                   cursor="pointer"
                   onClick={getClaimHistory}
+                  display="flex"
+                  alignItems={"center"}
+                  justifyContent="center"
+                  columnGap={"0.25rem"}
                 >
-                  View Invites
+                  <Text> View Invites</Text>
+                  <ArrowForwardIcon />
                 </Box>
               </Box>
 
