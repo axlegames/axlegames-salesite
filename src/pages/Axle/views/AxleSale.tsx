@@ -279,10 +279,10 @@ const AxleSale = () => {
   };
 
   const buyAxle = async () => {
-    if (bnb < 0.1)
+    if (bnb < 0.01)
       return toast({
         title: "Warning",
-        description: "Minimum 0.1 BNB",
+        description: "Minimum 0.01 BNB",
         status: "warning",
         duration: 5000,
         isClosable: true,
@@ -611,7 +611,7 @@ const AxleSale = () => {
                         color={brandingColors.primaryTextColor}
                         fontSize="sm"
                       >
-                        Min 0.1 BNB | Max 50 BNB
+                        Min 0.01 BNB | Max 50 BNB
                       </Text>
                     </Box>
                     <Box
