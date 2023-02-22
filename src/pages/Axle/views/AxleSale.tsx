@@ -510,22 +510,24 @@ const AxleSale = () => {
                 >
                   Buy AXLE
                 </Text>
-                <Box
-                  py={1}
-                  px={2}
-                  borderRadius="md"
-                  boxShadow={"md"}
-                  bg={brandingColors.fgColor}
-                  cursor="pointer"
-                  onClick={getClaimHistory}
-                  display="flex"
-                  alignItems={"center"}
-                  justifyContent="center"
-                  columnGap={"0.25rem"}
-                >
-                  <Text> View Invites</Text>
-                  <ArrowForwardIcon />
-                </Box>
+                {address !== "" ? (
+                  <Box
+                    py={1}
+                    px={2}
+                    borderRadius="md"
+                    boxShadow={"md"}
+                    bg={brandingColors.fgColor}
+                    cursor="pointer"
+                    onClick={getClaimHistory}
+                    display="flex"
+                    alignItems={"center"}
+                    justifyContent="center"
+                    columnGap={"0.25rem"}
+                  >
+                    <Text> View Invites</Text>
+                    <ArrowForwardIcon />
+                  </Box>
+                ) : null}
               </Box>
 
               <Flex
