@@ -12,7 +12,12 @@ import {
   useToast,
 } from "@chakra-ui/react";
 
-import { ArrowDownIcon, CopyIcon, LinkIcon } from "@chakra-ui/icons";
+import {
+  ArrowDownIcon,
+  ArrowForwardIcon,
+  CopyIcon,
+  LinkIcon,
+} from "@chakra-ui/icons";
 
 import NFT from "./NFT";
 import NeuButton from "../component/NeuButton";
@@ -84,7 +89,7 @@ const chainIds = [
 const web3Modal = new Web3Modal({
   network: "mainnet",
   theme: "dark",
-  cacheProvider: false,
+  cacheProvider: true,
   providerOptions: {
     binancechainwallet: {
       package: true,
@@ -117,7 +122,7 @@ const AxleSale = () => {
   const toast = useToast();
   const params = useParams();
 
-  const [bnb, setBnb] = useState<any>("0.01");
+  const [bnb, setBnb] = useState<any>("0.2");
   const [axle, setAxle] = useState<any>(750);
   const [balance, setBalance] = useState(0);
   const [axleBalance, setAxleBalance] = useState<any>("0");
@@ -175,7 +180,7 @@ const AxleSale = () => {
   // };
 
   const getClaimHistory = () => {
-    SaleReferralServices.getClaimHistory(params.refCode || "")
+    SaleReferralServices.getClaimHistory(referralCode || "")
       .then((res) => {
         setClaimHistory(res);
         setClaimDialog(true);
@@ -255,6 +260,7 @@ const AxleSale = () => {
         axleTokenABI,
         signer
       );
+
       const presale = new ethers.Contract(
         PRESALE_CONTRACT_ADDRESS,
         axlePresaleABI,
@@ -274,19 +280,19 @@ const AxleSale = () => {
   };
 
   const buyAxle = async () => {
-    if (bnb < 0.1)
+    if (bnb < 0.2)
       return toast({
         title: "Warning",
-        description: "Minimum 0.1 BNB",
+        description: "Minimum 0.2 BNB",
         status: "warning",
         duration: 5000,
         isClosable: true,
         position: "top",
       });
-    if (bnb > 50)
+    if (bnb > 2)
       return toast({
         title: "Warning",
-        description: "Maximum 50 BNB",
+        description: "Maximum 2 BNB",
         status: "warning",
         duration: 5000,
         isClosable: true,
@@ -498,24 +504,31 @@ const AxleSale = () => {
                 justifyContent="space-between"
                 mb={2}
               >
-                <Text
+                <Box
                   fontFamily={`'Russo One', sans-serif`}
                   pb={2}
                   fontSize={"xl"}
                 >
                   Buy AXLE
-                </Text>
-                <Box
-                  py={1}
-                  px={2}
-                  borderRadius="md"
-                  boxShadow={"md"}
-                  bg={brandingColors.fgColor}
-                  cursor="pointer"
-                  onClick={getClaimHistory}
-                >
-                  View Invites
                 </Box>
+                {address !== "" ? (
+                  <Box
+                    py={1}
+                    px={2}
+                    borderRadius="md"
+                    boxShadow={"md"}
+                    bg={brandingColors.fgColor}
+                    cursor="pointer"
+                    onClick={getClaimHistory}
+                    display="flex"
+                    alignItems={"center"}
+                    justifyContent="center"
+                    columnGap={"0.25rem"}
+                  >
+                    <Text> View Invites</Text>
+                    <ArrowForwardIcon />
+                  </Box>
+                ) : null}
               </Box>
 
               <Flex
@@ -601,7 +614,7 @@ const AxleSale = () => {
                         color={brandingColors.primaryTextColor}
                         fontSize="sm"
                       >
-                        Min 0.1 BNB | Max 50 BNB
+                        Min 0.2 BNB | Max 2 BNB
                       </Text>
                     </Box>
                     <Box
@@ -813,7 +826,7 @@ const AxleSale = () => {
                 >
                   Your Referral Link
                 </Text>
-                <Text
+                <Box
                   color={brandingColors.secondaryTextColor}
                   fontFamily={`'Russo One', sans-serif`}
                   fontWeight={"normal"}
@@ -839,7 +852,7 @@ const AxleSale = () => {
                     }}
                     color={brandingColors.secondaryTextColor}
                   />
-                </Text>
+                </Box>
               </Box>
             ) : null}
           </Box>

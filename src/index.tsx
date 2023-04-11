@@ -26,6 +26,7 @@ export const TutorialChain: Chain = {
     decimals: 18,
   },
 };
+
 const config: Config = {
   readOnlyChainId: TutorialChain.chainId,
   readOnlyUrls: {

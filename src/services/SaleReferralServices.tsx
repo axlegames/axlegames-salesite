@@ -15,6 +15,7 @@ export interface ClaimHistoryInterface {
   isTransactionDone: boolean;
   amount: number;
   hash: string;
+  reward: number;
 }
 
 export interface ClaimHistoryResponse {

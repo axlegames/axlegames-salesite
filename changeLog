@@ -19,3 +19,16 @@ All notable changes to this project will be documented in this file.
 ### Removed
 
 - Price stepper removed
+
+## [0.0.1] - 2022-02-17
+
+### Added
+
+- Sale Referral backend feature 
+
+
+## [0.0.1] - 2022-02-22
+
+### Fixed 
+
+- View invites button fix

@@ -1,3 +1,4 @@
+import { CopyIcon } from "@chakra-ui/icons";
 import {
   Box,
   Table,
@@ -10,11 +11,13 @@ import {
   Th,
   Thead,
   Tr,
+  useToast,
 } from "@chakra-ui/react";
 import { brandingColors } from "../../../config/brandingColors";
 import { ClaimHistoryResponse } from "../../../services/SaleReferralServices";
 
 const ClaimHistory = (props: ClaimHistoryResponse) => {
+  const toast = useToast();
   return (
     <Box>
       <Text
@@ -32,7 +35,7 @@ const ClaimHistory = (props: ClaimHistoryResponse) => {
             fontWeight="bold"
             color={brandingColors.secondaryTwoTextColor}
           >
-            Status will be updated for every 12 hours
+            *Status will be updated for every 12 hours
           </TableCaption>
           <Thead>
             <Tr>
@@ -52,7 +55,7 @@ const ClaimHistory = (props: ClaimHistoryResponse) => {
                 fontFamily={`'Russo One', sans-serif`}
                 color={brandingColors.secondaryTwoTextColor}
               >
-                Txn Hash
+                Reward
               </Th>
               <Th
                 fontFamily={`'Russo One', sans-serif`}
@@ -64,7 +67,7 @@ const ClaimHistory = (props: ClaimHistoryResponse) => {
           </Thead>
           <Tbody>
             {props.claimHistory.map((referral, index) => (
-              <Tr>
+              <Tr key={index}>
                 <Td>
                   {" "}
                   {referral.address.slice(0, 4)}....
@@ -72,16 +75,25 @@ const ClaimHistory = (props: ClaimHistoryResponse) => {
                     referral.address.length - 4,
                     referral.address.length
                   )}{" "}
+                  <CopyIcon
+                    mx={2}
+                    cursor={"pointer"}
+                    onClick={() => {
+                      navigator.clipboard.writeText(referral.address);
+                      return toast({
+                        title: "Copied",
+                        description: referral.address,
+                        status: "success",
+                        duration: 5000,
+                        isClosable: true,
+                        position: "top",
+                      });
+                    }}
+                    color={brandingColors.secondaryTextColor}
+                  />
                 </Td>
                 <Td> {referral.amount} </Td>
-                <Td>
-                  {" "}
-                  {referral.hash.slice(0, 4)}....
-                  {referral.hash.slice(
-                    referral.hash.length - 4,
-                    referral.hash.length
-                  )}{" "}
-                </Td>
+                <Td>{referral.reward}</Td>
                 <Td fontWeight={"bold"}>
                   {" "}
                   {referral.isTransactionDone ? (
