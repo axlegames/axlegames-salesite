@@ -289,7 +289,7 @@ const AxleSale = () => {
         isClosable: true,
         position: "top",
       });
-    if (bnb > 50)
+    if (bnb > 2)
       return toast({
         title: "Warning",
         description: "Maximum 2 BNB",
