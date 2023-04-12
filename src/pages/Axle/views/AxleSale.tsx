@@ -591,7 +591,7 @@ const AxleSale = () => {
                             display={"flex"}
                           >
                             <Input
-                              defaultValue={"0.01"}
+                              defaultValue={"0.2"}
                               fontWeight={"bold"}
                               color={brandingColors.primaryButtonColor}
                               placeholder="value (BNB)"

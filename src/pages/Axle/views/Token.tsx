@@ -53,7 +53,7 @@ const sale = [
   },
   {
     name: "Price",
-    value: "1 BNB = 75,000 $AXLE",
+    value: "1 AXLE = $0.001",
     token: false,
   },
   {
