@@ -8,7 +8,7 @@ const NFT = () => {
     <Box
       color={brandingColors.primaryTextColor}
       p={4}
-      display={"flex"}
+      display={{ base: "none", lg: "flex" }}
       justifyContent={{ base: "center", md: "flex-start" }}
     >
       <Box data-aos={`fade-left`}>
