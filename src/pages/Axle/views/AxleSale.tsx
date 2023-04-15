@@ -123,7 +123,7 @@ const AxleSale = () => {
   const params = useParams();
 
   const [bnb, setBnb] = useState<any>("0.2");
-  const [axle, setAxle] = useState<any>(750);
+  const [axle, setAxle] = useState<any>(65000);
   const [balance, setBalance] = useState(0);
   const [axleBalance, setAxleBalance] = useState<any>("0");
   const [claimHistory, setClaimHistory] = useState<ClaimHistoryResponse>();
