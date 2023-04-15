@@ -203,7 +203,7 @@ const AxleSale = () => {
     }
     if (e.target.value === "0.") bnb = e.target.value;
     setBnb(bnb.toString());
-    setAxle((bnb * 75000).toString());
+    setAxle((bnb * 325000).toString());
   };
 
   const setNetworkName = (chainId: number) => {
